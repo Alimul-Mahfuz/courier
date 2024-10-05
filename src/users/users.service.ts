@@ -10,30 +10,42 @@ export class UsersService {
 
   constructor(
     @InjectRepository(User)
-    private readonly userRepository:Repository<User>,
-    private readonly userEntityManager:EntityManager
-  ){}
+    private readonly userRepository: Repository<User>,
+    private readonly userEntityManager: EntityManager
+  ) { }
 
 
   async create(createUserDto: CreateUserDto) {
-    const newUser=new User(createUserDto)
+    const newUser = new User(createUserDto)
     return await this.userEntityManager.save(newUser)
   }
 
-  async findAll() {
-    return await this.userRepository.find()
+
+  async findAll(page: number, limit: number) {
+    const [result, total] = await this.userRepository.findAndCount({
+      take: limit, 
+      skip: (page - 1) * limit,
+    });
+  
+    return {
+      data: result,
+      total,
+      page,
+      lastPage: Math.ceil(total / limit),
+    };
   }
+  
 
   async findOne(id: number) {
-    return await this.userRepository.findOne({where:{id}})
+    return await this.userRepository.findOne({ where: { id } })
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    const user= await this.userRepository.findOneBy({id})
-    if(!user){
+    const user = await this.userRepository.findOneBy({ id })
+    if (!user) {
       return "User not found!"
     }
-    Object.assign(user,updateUserDto)
+    Object.assign(user, updateUserDto)
     await this.userEntityManager.save(user)
     return "User saved"
   }
@@ -42,7 +54,22 @@ export class UsersService {
     await this.userRepository.delete(+id)
   }
 
-  async findByEmail(email:string){
-    return await this.userRepository.findOne({where:{email}})
+  async bulkUserCreate(createUserDtos:CreateUserDto[]){
+
+    if(createUserDtos.length===0){
+      return "Field is empty"
+    }
+
+    const users=createUserDtos.map((dto)=>new User(dto))
+
+    try {
+      const entries=await this.userRepository.insert(users)
+      return "Data inserted successfully"
+    } catch (error) {
+      return "error"
+    }
+
   }
+
+
 }
