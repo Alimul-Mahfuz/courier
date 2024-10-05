@@ -1,7 +1,6 @@
-import { IsEmail, IsEmpty, IsNotEmpty, IsString } from "class-validator";
-import { IsUniqueEmail } from "../decorators/is_unique_email.decorator";
+import { IsEmail, IsNotEmpty, IsString, Validate } from "class-validator";
 import { UserType } from "../entities/user.entity";
-
+import { IsUnique } from "src/shared/validation/is-unique";
 export class CreateUserDto {
     @IsString()
     @IsNotEmpty()
@@ -10,7 +9,7 @@ export class CreateUserDto {
     @IsString()
     @IsEmail()
     @IsNotEmpty()
-    @IsUniqueEmail({message:"duplicate email"})
+    @IsUnique({tablename:"user",column:"email"})
     email:string
 
     phone:string
