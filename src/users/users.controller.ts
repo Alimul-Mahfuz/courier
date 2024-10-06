@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards, Request, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { AuthGuard } from 'src/auth/guards/guard';
 
 @Controller('users')
 export class UsersController {
@@ -12,6 +13,7 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
+  @UseGuards(AuthGuard)
   @Get()
   findAll(@Query('page') page: number = 1, @Query('limit') limit: number = 10) {
     return this.usersService.findAll(page, limit);
@@ -37,5 +39,12 @@ export class UsersController {
   bulkcreate(@Body() createUserDto:CreateUserDto[]){
     return this.usersService.bulkUserCreate(createUserDto)
   }
-
+  
+  @UseGuards(AuthGuard)
+  @Get('me')
+  async me(@Request() request) {
+     return request
+  }
+  
+  
 }
